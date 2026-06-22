@@ -1,0 +1,53 @@
+# Outputs and logs
+artifacts/
+artifacts/
+*/artifacts/output/
+*/artifacts/logs/
+**/artifacts/output/
+**/artifacts/logs/
+
+# Common output folders
+output/
+outputs/
+results/
+logs/
+runs/
+wandb/
+
+# Large/generated files
+*.parquet
+*.jsonl_results.jsonl
+*_results.jsonl
+*.out
+*.err
+*.log
+slurm-*.out
+
+# Model/checkpoint files
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.onnx
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Environments
+venv/
+env/
+.venv/
+.env/
+miniconda3/
+anaconda3/
+
+# System files
+.DS_Store
+
+# Local/user-specific scripts
+local_scripts/
+*/local_scripts/
+**/local_scripts/

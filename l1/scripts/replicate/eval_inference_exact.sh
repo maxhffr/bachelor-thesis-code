@@ -1,0 +1,12 @@
+MODEL_PATH=$1
+
+./scripts/eval/eval_model_token.sh --model $MODEL_PATH --num-tokens 512 --datasets aime math amc olympiad_bench
+./scripts/eval/eval_model_token.sh --model $MODEL_PATH --num-tokens 1024 --datasets aime math amc olympiad_bench
+./scripts/eval/eval_model_token.sh --model $MODEL_PATH --num-tokens 2048 --datasets aime math amc olympiad_bench
+./scripts/eval/eval_model_token.sh --model $MODEL_PATH --num-tokens 3600 --datasets aime math amc olympiad_bench
+
+#./scripts/eval/eval_model_token_others.sh --model $MODEL_PATH --num-tokens 512 --datasets aime2025 gpqa mmlu_1000 lsat
+#./scripts/eval/eval_model_token_others.sh --model $MODEL_PATH --num-tokens 1024 --datasets aime2025 gpqa mmlu_1000 lsat
+#./scripts/eval/eval_model_token_others.sh --model $MODEL_PATH --num-tokens 2048 --datasets aime2025 gpqa mmlu_1000 lsat
+#./scripts/eval/eval_model_token_others.sh --model $MODEL_PATH --num-tokens 3600 --datasets aime2025 gpqa mmlu_1000 lsat
+

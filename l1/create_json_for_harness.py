@@ -1,0 +1,319 @@
+import os
+import re
+import json
+import argparse
+import textwrap
+import pandas as pd
+from collections import Counter
+
+# This file is used to create a .jsonl file out of a .parquet file
+# It is used to create the .jsonl for the humaneval harness
+# You have to input an input and output path
+# To get the pass@1 accuracy you have to call this file with --first-only
+
+
+PROSE_STARTS = tuple(s.lower() for s in [
+    "to solve",
+    "approach",
+    "solution",
+    "explanation",
+    "the function",
+    "this function",
+    "we need",
+    "in this",
+    "here is",
+    "here's",
+    "this approach",
+    "the approach",
+    "first,",
+    "next,",
+    "finally",
+    "time complexity",
+    "space complexity",
+    "therefore",
+    "so,",
+    "now,",
+    "note:",
+    "###",
+    "**",
+    "- ",
+])
+
+
+CODE_START_RE = re.compile(
+    r"^\s*("
+    r"def\s+|class\s+|import\s+|from\s+|return\b|if\b|for\b|while\b|"
+    r"try\b|with\b|assert\b|raise\b|pass\b|break\b|continue\b|yield\b|"
+    r"[A-Za-z_]\w*\s*=|[A-Za-z_]\w*\s*\+=|[A-Za-z_]\w*\s*-=|"
+    r"[A-Za-z_]\w*\s*\.append\("
+    r")"
+)
+
+
+def remove_think_blocks(text: str) -> str:
+    """
+    Entfernt vollständige <think>...</think>-Blöcke.
+    Falls ein unvollständiger <think>-Block übrig bleibt, wird möglichst nur
+    der Teil nach </think> behalten. Wenn es keinen gibt, wird leerer Code erzeugt.
+    """
+    text = str(text or "")
+
+    previous = None
+    while previous != text:
+        previous = text
+        text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL | re.IGNORECASE)
+
+    if "<think>" in text.lower():
+        parts = re.split(r"</think>", text, flags=re.IGNORECASE)
+        if len(parts) > 1:
+            text = parts[-1]
+        else:
+            text = ""
+
+    return text.strip()
+
+
+def looks_like_prose(line: str) -> bool:
+    stripped = line.strip()
+    lowered = stripped.lower()
+
+    if not stripped:
+        return False
+
+    if lowered.startswith(PROSE_STARTS):
+        return True
+
+    if re.match(r"^\d+\.\s+\*\*", stripped):
+        return True
+
+    return False
+
+
+def extract_code_region(response: str) -> str:
+    """
+    Holt den wahrscheinlichsten Python-Code aus der Modellantwort.
+    Bevorzugt Markdown-Codeblöcke.
+    Falls kein Codeblock vorhanden ist, wird ab der ersten plausiblen Codezeile gelesen.
+    """
+    text = remove_think_blocks(response)
+
+    if not text:
+        return ""
+
+    code_blocks = re.findall(
+        r"```(?:python|py)?\s*(.*?)```",
+        text,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    if code_blocks:
+        # Nimm den längsten Block, der wie Code aussieht.
+        code_blocks = sorted(
+            code_blocks,
+            key=lambda block: (bool(CODE_START_RE.search(block)), len(block)),
+            reverse=True,
+        )
+        return code_blocks[0].strip("\n")
+
+    # Falls "Solution Code" vorkommt, aber der Codeblock abgeschnitten ist
+    match = re.search(
+        r"(?:Solution Code|Code|Final Answer)\s*:?\s*(?:```(?:python|py)?\s*)?(.*)$",
+        text,
+        flags=re.DOTALL | re.IGNORECASE,
+    )
+
+    if match and CODE_START_RE.search(match.group(1)):
+        text = match.group(1)
+
+    lines = text.splitlines()
+
+    start = None
+    for i, line in enumerate(lines):
+        if CODE_START_RE.match(line):
+            start = i
+            break
+
+    if start is None:
+        return ""
+
+    code_lines = []
+
+    for line in lines[start:]:
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            continue
+
+        if code_lines and looks_like_prose(line):
+            break
+
+        code_lines.append(line.rstrip())
+
+    return "\n".join(code_lines).strip("\n")
+
+
+def cut_after_prose(code: str) -> str:
+    """
+    Entfernt Erklärungstext, der nach dem Code kommt.
+    """
+    lines = code.splitlines()
+    cleaned = []
+
+    for line in lines:
+        if cleaned and looks_like_prose(line):
+            break
+        cleaned.append(line.rstrip())
+
+    return "\n".join(cleaned).strip("\n")
+
+
+def extract_function_body(code: str, entry_point: str) -> str:
+    """
+    HumanEval erwartet normalerweise nur den Body der Funktion, weil der Prompt
+    die Funktionssignatur bereits enthält.
+
+    Wenn das Modell die komplette Funktion ausgibt:
+        def foo(...):
+            ...
+    wird nur der Body extrahiert.
+
+    Wenn das Modell nur den Body ausgibt:
+        return ...
+    wird dieser normalisiert und mit 4 Spaces eingerückt.
+    """
+    code = cut_after_prose(code)
+
+    if not code.strip():
+        return "    pass\n"
+
+    pattern = (
+        rf"(^|\n)(?P<indent>[ \t]*)"
+        rf"def\s+{re.escape(entry_point)}\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:"
+    )
+
+    match = re.search(pattern, code)
+
+    if match:
+        body = code[match.end():]
+        body = body.lstrip("\n")
+        body = textwrap.dedent(body).strip("\n")
+    else:
+        body = textwrap.dedent(code).strip("\n")
+
+    body = cut_after_prose(body)
+
+    if not body.strip():
+        body = "pass"
+
+    body = textwrap.indent(textwrap.dedent(body).strip("\n"), "    ")
+
+    return body.rstrip() + "\n"
+
+
+def response_to_completion(response: str, entry_point: str) -> str:
+    code = extract_code_region(response)
+    completion = extract_function_body(code, entry_point)
+    return completion
+
+
+def validate_jsonl(path: str):
+    """
+    Einfacher Syntax-Check: Completion wird in eine Dummy-Funktion eingerückt
+    und kompiliert. Das ersetzt nicht das HumanEval-Harness, findet aber grobe
+    Formatfehler.
+    """
+    syntax_errors = 0
+    markers = 0
+    total = 0
+    task_counts = Counter()
+
+    marker_strings = [
+        "<think>",
+        "```",
+        "To solve",
+        "###",
+        "Approach",
+        "Explanation",
+        "The function",
+        "Solution Code",
+    ]
+
+    with open(path, "r", encoding="utf-8") as f:
+        for line in f:
+            total += 1
+            row = json.loads(line)
+            task_counts[row["task_id"]] += 1
+
+            completion = row["completion"]
+
+            if any(marker in completion for marker in marker_strings):
+                markers += 1
+
+            try:
+                compile("def __candidate__():\n" + completion, "<completion>", "exec")
+            except Exception:
+                syntax_errors += 1
+
+    print()
+    print("Validation")
+    print("-" * 80)
+    print("Total samples:", total)
+    print("Tasks:", len(task_counts))
+    print("Samples per task:", dict(Counter(task_counts.values())))
+    print("Completions with obvious prose/markdown markers:", markers)
+    print("Completions with syntax errors in rough check:", syntax_errors)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", required=True, help="Input parquet file")
+    parser.add_argument("--output", required=True, help="Output jsonl file")
+    parser.add_argument(
+        "--first-only",
+        action="store_true",
+        help="Only keep first response per task, useful for simple pass@1",
+    )
+    args = parser.parse_args()
+
+    input_path = os.path.expandvars(args.input)
+    output_path = os.path.expandvars(args.output)
+
+    df = pd.read_parquet(input_path)
+
+    rows = []
+
+    for _, row in df.iterrows():
+        extra_info = row["extra_info"]
+        task_id = extra_info["task_id"]
+        entry_point = extra_info["entry_point"]
+
+        responses = row["responses"]
+
+        if isinstance(responses, str):
+            responses = [responses]
+
+        if args.first_only:
+            responses = responses[:1]
+
+        for response in responses:
+            completion = response_to_completion(response, entry_point)
+
+            rows.append({
+                "task_id": task_id,
+                "completion": completion,
+            })
+
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    print("Wrote:", output_path)
+    print("Rows:", len(rows))
+
+    validate_jsonl(output_path)
+
+
+if __name__ == "__main__":
+    main()
