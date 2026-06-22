@@ -15,7 +15,7 @@ conda activate seal
 
 python eval_gsm8k_vllm.py \
   --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --save_dir $WORK/SEAL/artifacts/output/own/GSM8K_vllm \
+  --save_dir "./artifacts/output/own/GSM8K_vllm" \
   --max_tokens 10000 \
   --use_chat_format \
   --dataset GSM8K \

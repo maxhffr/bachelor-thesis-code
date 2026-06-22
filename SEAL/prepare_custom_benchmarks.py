@@ -64,7 +64,10 @@ def prepare_gsm8k():
             "question": ex["question"],
             "gt": extract_gsm8k_final_answer(ex["answer"]),
         })
-    out_path = OUT_DIR / "gsm8k_test.jsonl"
+    benchmark_dir = OUT_DIR / "gsm8k"
+    benchmark_dir.mkdir(parents=True, exist_ok=True)
+
+    out_path = OUT_DIR / "gsm8k" / "gsm8k_test.jsonl"
     write_jsonl(out_path, rows)
     print(f"Wrote {len(rows)} rows -> {out_path}")
 
@@ -95,7 +98,10 @@ def prepare_mmlu():
 
         rows.append(row)
 
-    out_path = OUT_DIR / "mmlu_test.jsonl"
+    benchmark_dir = OUT_DIR / "mmlu"
+    benchmark_dir.mkdir(parents=True, exist_ok=True)
+
+    out_path = OUT_DIR / "mmlu" / "mmlu_test.jsonl"
     write_jsonl(out_path, rows)
     print(f"Wrote {len(rows)} rows -> {out_path}")
 
@@ -112,7 +118,10 @@ def prepare_mgsm():
                 "gt": normalize_number_string(str(ex["answer"])),
             })
 
-        out_path = OUT_DIR / f"mgsm_{lang}_test.jsonl"
+        benchmark_dir = OUT_DIR / "mgsm"
+        benchmark_dir.mkdir(parents=True, exist_ok=True)
+
+        out_path = OUT_DIR / "mgsm" / f"mgsm_{lang}_test.jsonl"
         write_jsonl(out_path, rows)
         print(f"Wrote {len(rows)} rows -> {out_path}")
 
@@ -129,7 +138,10 @@ def prepare_humaneval():
             "entry_point": ex["entry_point"],
         })
 
-    out_path = OUT_DIR / "humaneval_test.jsonl"
+    benchmark_dir = OUT_DIR / "humaneval"
+    benchmark_dir.mkdir(parents=True, exist_ok=True)
+
+    out_path = OUT_DIR / "humaneval" / "humaneval_test.jsonl"
     write_jsonl(out_path, rows)
     print(f"Wrote {len(rows)} rows -> {out_path}")
 
@@ -146,7 +158,10 @@ def prepare_bbh():
                 "gt": ex["target"],
             })
 
-        out_path = OUT_DIR / f"bbh_{task}_test.jsonl"
+        benchmark_dir = OUT_DIR / "bbh"
+        benchmark_dir.mkdir(parents=True, exist_ok=True)
+
+        out_path = OUT_DIR / "bbh" / f"bbh_{task}_test.jsonl"
         write_jsonl(out_path, rows)
         print(f"Wrote {len(rows)} rows -> {out_path}")
 

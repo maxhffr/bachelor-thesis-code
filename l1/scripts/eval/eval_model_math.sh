@@ -10,7 +10,7 @@ DATATYPES=("aime" "math" "amc" "minerva" "olympiad_bench" "gpqa" "lsat" "mmlu_10
 
 
 # DATATYPES=("math")
-OUTPUT_DIR="$WORK/l1/artifacts/output/output_base"  # Add default output directory
+OUTPUT_DIR="./artifacts/output/output_base"  # Add default output directory
 
 # Parse named arguments
 while [[ $# -gt 0 ]]; do

@@ -15,7 +15,7 @@ conda activate seal
 
 python eval_humaneval_vllm.py \
   --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --save_dir $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/ \
+  --save_dir "./artifacts/output/own/HUMANEVAL_vllm/" \
   --benchmark humaneval \
   --data_path data/humaneval/humaneval_test.jsonl \
   --max_tokens 10000 \

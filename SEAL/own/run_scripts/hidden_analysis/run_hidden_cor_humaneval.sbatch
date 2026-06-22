@@ -15,16 +15,16 @@ conda activate seal
 
 python hidden_analysis_humaneval.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_dir $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm \
+  --data_dir "./artifacts/output/own/HUMANEVAL_vllm" \
   --dataset humaneval \
-  --humaneval_results_path $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/humaneval_samples.jsonl_results.jsonl \
-  --humaneval_reasoning_path $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/humaneval_raw_outputs.jsonl \
+  --humaneval_results_path "./artifacts/output/own/HUMANEVAL_vllm/humaneval_samples.jsonl_results.jsonl" \
+  --humaneval_reasoning_path "./artifacts/output/own/HUMANEVAL_vllm/humaneval_raw_outputs.jsonl" \
   --type correct
 
 python hidden_analysis_humaneval.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_dir $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm \
+  --data_dir "./artifacts/output/own/HUMANEVAL_vllm" \
   --dataset humaneval \
-  --humaneval_results_path $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/humaneval_samples.jsonl_results.jsonl \
-  --humaneval_reasoning_path $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/humaneval_raw_outputs.jsonl \
+  --humaneval_results_path "./artifacts/output/own/HUMANEVAL_vllm/humaneval_samples.jsonl_results.jsonl" \
+  --humaneval_reasoning_path "./artifacts/output/own/HUMANEVAL_vllm/humaneval_raw_outputs.jsonl" \
   --type incorrect

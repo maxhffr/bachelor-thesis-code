@@ -18,7 +18,7 @@ LANGS=("de" "fr" "es" "ru" "zh" "ja")
 for LANG in "${LANGS[@]}"; do
     python eval_mgsm_lc_steering.py \
       --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-      --save_dir "/work/maxhoffe/SEAL/artifacts/output/own/MGSM_steering/lc/ov/$LANG" \
+      --save_dir "./artifacts/output/own/MGSM_steering/lc/ov/$LANG" \
       --max_tokens 10000 \
       --use_chat_format \
       --batch_size 16 \
@@ -26,7 +26,7 @@ for LANG in "${LANGS[@]}"; do
       --lang "$LANG" \
       --remove_bos \
       --steering \
-      --steering_vector $WORK/SEAL/artifacts/output/own/GSM8K_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt \
+      --steering_vector "./artifacts/output/own/GSM8K_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt" \
       --steering_layer 20 \
       --steering_coef -1.0 \
       --start 0

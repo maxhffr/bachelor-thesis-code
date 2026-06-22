@@ -15,7 +15,7 @@ conda activate seal
 
 python eval_BBH_steering.py \
   --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --save_dir $WORK/SEAL/artifacts/output/own/BBH_steering/ov \
+  --save_dir "./artifacts/output/own/BBH_steering/ov" \
   --max_tokens 10000 \
   --use_chat_format \
   --batch_size 16 \
@@ -24,7 +24,7 @@ python eval_BBH_steering.py \
   --max_examples_per_task 100 \
   --remove_bos \
   --steering \
-  --steering_vector $WORK/SEAL/artifacts/output/own/BBH_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt  \
+  --steering_vector "./artifacts/output/own/BBH_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt"  \
   --steering_layer 20 \
   --steering_coef -1.0 \
   --start 0

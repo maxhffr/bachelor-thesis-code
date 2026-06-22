@@ -8,7 +8,7 @@ NUM_TOKENS=512  # Add default NUM_TOKENS
 MAX_TOKENS=$((NUM_TOKENS * 2))  # Set MAX_TOKENS to twice NUM_TOKENS
 DATATYPES=("gsm8k_1000" "mgsm_de" "mgsm_fr" "mgsm_es" "mgsm_ru" "mgsm_zh" "mgsm_ja" "bbh" "humaneval" "mgsm_de_lc" "mgsm_fr_lc" "mgsm_es_lc" "mgsm_ru_lc" "mgsm_zh_lc" "mgsm_ja_lc" "gsm8k" "mmlu")
 
-OUTPUT_DIR="$WORK/l1/artifacts/output/output_own"  # Add default output directory
+OUTPUT_DIR="./artifacts/output/output_own"  # Add default output directory
 
 
 # Parse named arguments

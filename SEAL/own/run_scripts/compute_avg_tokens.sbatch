@@ -15,9 +15,9 @@ LANGS=("de" "fr" "es" "ru" "zh" "ja")
 
 #for LANG in "${LANGS[@]}"; do
     python compute_avg_tokens.py \
-      "/work/maxhoffe/SEAL/artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/humaneval_raw_outputs.jsonl" \
+      "./artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/humaneval_raw_outputs.jsonl" \
       --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-      --output_path "/work/maxhoffe/SEAL/artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/token_metrics.json" \
-      --humaneval_results_path "/work/maxhoffe/SEAL/artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/humaneval_samples.jsonl_results.jsonl"
+      --output_path "./artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/token_metrics.json" \
+      --humaneval_results_path "./artifacts/output/own/HUMANEVAL_steering/alpha+0.2/baseline_10000_vector_500_500_layer_20_transition_reflection_steervec/coef_-0.2_remove_bos/humaneval_samples.jsonl_results.jsonl"
 #done
 

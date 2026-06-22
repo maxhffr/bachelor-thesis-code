@@ -8,7 +8,7 @@ NUM_TOKENS=512  # Add default NUM_TOKENS
 MAX_TOKENS=$((NUM_TOKENS * 2))  # Set MAX_TOKENS to twice NUM_TOKENS
 DATATYPES=("math" "amc" "aime" "olympiad_bench" "gsm8k_1000")
 
-OUTPUT_DIR="$WORK/l1/artifacts/output/output"  # Add default output directory
+OUTPUT_DIR="./artifacts/output/output"  # Add default output directory
 
 
 # Parse named arguments

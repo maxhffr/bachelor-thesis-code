@@ -15,16 +15,16 @@ conda activate seal
 
 python hidden_analysis.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_path data/MATH/train.jsonl \
-  --data_dir $WORK/SEAL/artifacts/output/MATH_train/DeepSeek-R1-Distill-Qwen-1.5B/baseline_10000 \
+  --data_path "./data/MATH/train.jsonl" \
+  --data_dir "./artifacts/output/MATH_train/DeepSeek-R1-Distill-Qwen-1.5B/baseline_10000" \
   --type correct \
   --start 0 \
   --sample 500
 
 python hidden_analysis.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_path data/MATH/train.jsonl \
-  --data_dir $WORK/SEAL/artifacts/output/MATH_train/DeepSeek-R1-Distill-Qwen-1.5B/baseline_10000 \
+  --data_path "./data/MATH/train.jsonl" \
+  --data_dir "./artifacts/output/MATH_train/DeepSeek-R1-Distill-Qwen-1.5B/baseline_10000" \
   --type incorrect \
   --start 0 \
   --sample 500

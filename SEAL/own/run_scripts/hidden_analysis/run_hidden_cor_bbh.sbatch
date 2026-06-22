@@ -15,14 +15,14 @@ conda activate seal
 
 python hidden_analysis_bbh.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_dir $WORK/SEAL/artifacts/output/own/BBH_vllm \
+  --data_dir "./artifacts/output/own/BBH_vllm" \
   --type correct \
   --start 0 \
   --sample 500
 
 python hidden_analysis_bbh.py \
   --model_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --data_dir $WORK/SEAL/artifacts/output/own/BBH_vllm \
+  --data_dir "./artifacts/output/own/BBH_vllm" \
   --type incorrect \
   --start 0 \
   --sample 500

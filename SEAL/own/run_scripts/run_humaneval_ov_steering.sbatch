@@ -15,7 +15,7 @@ conda activate seal
 
 python eval_humaneval_steering.py \
   --model_name_or_path deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B \
-  --save_dir $WORK/SEAL/artifacts/output/own/HUMANEVAL_steering/ov \
+  --save_dir "./artifacts/output/own/HUMANEVAL_steering/ov" \
   --max_tokens 10000 \
   --benchmark humaneval \
   --data_path data/humaneval/humaneval_test.jsonl \
@@ -23,7 +23,7 @@ python eval_humaneval_steering.py \
   --batch_size 1 \
   --remove_bos \
   --steering \
-  --steering_vector $WORK/SEAL/artifacts/output/own/HUMANEVAL_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt \
+  --steering_vector "./artifacts/output/own/HUMANEVAL_vllm/vector_500_500/layer_20_transition_reflection_steervec.pt" \
   --steering_layer 20 \
   --steering_coef -1.0 \
   --start 0

@@ -21,7 +21,6 @@ distro==1.9.0
 einops==0.8.2
 fastapi==0.135.1
 filelock==3.25.0
-flash_attn @ https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.5cxx11abiFALSE-cp312-cp312-linux_x86_64.whl#sha256=51f6422861ed951b968428adc9fa7406027f73f2145be5e163810df6f459abea
 frozenlist==1.8.0
 fsspec==2026.2.0
 gguf==0.10.0
@@ -78,7 +77,7 @@ openai==2.26.0
 opencv-python-headless==4.11.0.86
 orjson==3.11.7
 outlines==0.0.46
-packaging @ file:///home/task_176104874243446/conda-bld/packaging_1761049080023/work
+packaging==25.0
 pandas==3.0.1
 partial-json-parser==0.2.1.1.post7
 peft==0.18.1
