@@ -1,0 +1,5 @@
+name: l1_testverl
+channels:
+  - defaults
+dependencies:
+  - python=3.12
