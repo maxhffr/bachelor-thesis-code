@@ -53,8 +53,6 @@ conda activate seal
 pip install -r envs/seal_requirements.txt
 ```
 
-Depending on the local CUDA setup, some packages such as PyTorch, vLLM, FlashAttention, or verl may need to be adjusted manually.
-
 ## Usage
 
 The general workflow for using this repository is:
