@@ -11,7 +11,7 @@
 
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 
-conda activate l1_testverl
+conda activate l1
 
 ./scripts/replicate/eval_inference_max.sh l3lab/L1-Qwen-1.5B-Max
 

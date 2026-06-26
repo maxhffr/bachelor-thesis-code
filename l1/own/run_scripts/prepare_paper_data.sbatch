@@ -11,6 +11,6 @@
 
 source "$HOME/miniconda3/etc/profile.d/conda.sh"
 
-conda activate l1_testverl
+conda activate l1
 
 ./scripts/replicate/prepare_data.sh
