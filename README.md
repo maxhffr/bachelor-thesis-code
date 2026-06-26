@@ -41,9 +41,11 @@ The `.yml` files create the basic Conda environments. The required Python packag
 conda env create -f envs/l1_environment.yml
 conda activate l1
 pip install -r envs/l1_requirements.txt
-pip install --no-deps --no-cache-dir \ "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.5cxx11abiFALSE-cp312-cp312-linux_x86_64.whl"
+pip install --no-deps --no-cache-dir "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.5cxx11abiFALSE-cp312-cp312-linux_x86_64.whl"
 ./l1/scripts/setup/patch_verl_fsdp.sh
 ```
+
+The patch is required, because without it, verl may try to build an optimizer during generation although no optimizer configuration is used.
 
 ### SEAL Environment
 
