@@ -146,7 +146,7 @@ Some scripts may contain machine-specific paths, model paths, output paths, or S
 
 ### MGSM
 
-For the benchmark MGSM, test with translated prompts are included in 
+For the benchmark MGSM, test with translated prompt instructions are included in 
 ```bash
 # baseline
 sbatch own/run_scripts/run_mgsm_vllm_lc.sbatch
