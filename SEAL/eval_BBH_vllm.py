@@ -77,7 +77,7 @@ def extract_last_number(pred_str):
     return ans
 
 
-# Hier wird BBH geladen (BBH-Loader)
+# BBH-Loader
 def load_bbh_data(data_dir="data/bbh", max_examples_per_task=None):
     paths = sorted(glob.glob(os.path.join(data_dir, "bbh_*_test.jsonl")))
 

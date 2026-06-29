@@ -214,7 +214,7 @@ def main(args):
         "prompt": prompt,
         "problem": example["question"],
         "answer": example["gt"],
-        "solution":  example.get("answer", ""), # Hier wurde etwas geändert -> davor: example["answer"]
+        "solution":  example.get("answer", ""),
         "model_generation": output,
     } for example, output, prompt in zip(test_data, outputs, prompts)]
 

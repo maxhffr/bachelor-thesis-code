@@ -6,10 +6,11 @@ import textwrap
 import pandas as pd
 from collections import Counter
 
-# This file is used to create a .jsonl file out of a .parquet file
-# It is used to create the .jsonl for the humaneval harness
-# You have to input an input and output path
-# To get the pass@1 accuracy you have to call this file with --first-only
+"""
+Convert L1 HumanEval parquet outputs into JSONL files for the HumanEval Harness.
+
+Use --first-only to only keep the first response per task for pass@1 evaluation.
+"""
 
 
 PROSE_STARTS = tuple(s.lower() for s in [
@@ -52,9 +53,7 @@ CODE_START_RE = re.compile(
 
 def remove_think_blocks(text: str) -> str:
     """
-    Entfernt vollständige <think>...</think>-Blöcke.
-    Falls ein unvollständiger <think>-Block übrig bleibt, wird möglichst nur
-    der Teil nach </think> behalten. Wenn es keinen gibt, wird leerer Code erzeugt.
+    removes complete <think>...</think>-blocks
     """
     text = str(text or "")
 
@@ -91,9 +90,7 @@ def looks_like_prose(line: str) -> bool:
 
 def extract_code_region(response: str) -> str:
     """
-    Holt den wahrscheinlichsten Python-Code aus der Modellantwort.
-    Bevorzugt Markdown-Codeblöcke.
-    Falls kein Codeblock vorhanden ist, wird ab der ersten plausiblen Codezeile gelesen.
+    extracts the most likely python-code from the output
     """
     text = remove_think_blocks(response)
 
@@ -107,7 +104,6 @@ def extract_code_region(response: str) -> str:
     )
 
     if code_blocks:
-        # Nimm den längsten Block, der wie Code aussieht.
         code_blocks = sorted(
             code_blocks,
             key=lambda block: (bool(CODE_START_RE.search(block)), len(block)),
@@ -115,7 +111,6 @@ def extract_code_region(response: str) -> str:
         )
         return code_blocks[0].strip("\n")
 
-    # Falls "Solution Code" vorkommt, aber der Codeblock abgeschnitten ist
     match = re.search(
         r"(?:Solution Code|Code|Final Answer)\s*:?\s*(?:```(?:python|py)?\s*)?(.*)$",
         text,
@@ -154,7 +149,7 @@ def extract_code_region(response: str) -> str:
 
 def cut_after_prose(code: str) -> str:
     """
-    Entfernt Erklärungstext, der nach dem Code kommt.
+    removes explanation text after the code
     """
     lines = code.splitlines()
     cleaned = []
@@ -169,17 +164,7 @@ def cut_after_prose(code: str) -> str:
 
 def extract_function_body(code: str, entry_point: str) -> str:
     """
-    HumanEval erwartet normalerweise nur den Body der Funktion, weil der Prompt
-    die Funktionssignatur bereits enthält.
-
-    Wenn das Modell die komplette Funktion ausgibt:
-        def foo(...):
-            ...
-    wird nur der Body extrahiert.
-
-    Wenn das Modell nur den Body ausgibt:
-        return ...
-    wird dieser normalisiert und mit 4 Spaces eingerückt.
+    extraxts the function body and normalizes the body
     """
     code = cut_after_prose(code)
 
@@ -217,11 +202,6 @@ def response_to_completion(response: str, entry_point: str) -> str:
 
 
 def validate_jsonl(path: str):
-    """
-    Einfacher Syntax-Check: Completion wird in eine Dummy-Funktion eingerückt
-    und kompiliert. Das ersetzt nicht das HumanEval-Harness, findet aber grobe
-    Formatfehler.
-    """
     syntax_errors = 0
     markers = 0
     total = 0

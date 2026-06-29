@@ -11,8 +11,8 @@ from transformers import AutoTokenizer
 def extract_reasoning_part(text):
     """
     Approximation:
-    reasoning = alles vor der letzten boxed-Antwort.
-    Falls keine boxed-Antwort existiert, nehmen wir die komplette Generation.
+    reasoning = everything before the boxed answer.
+    If there is no boxed, then everything
     """
     if text is None:
         return ""
@@ -36,11 +36,6 @@ def count_tokens(tokenizer, text):
 
 
 def get_group_name(row):
-    """
-    Für BBH gibt es tasktypes, z.B. date_understanding.
-    Für MMLU/GSM/MGSM/MATH gibt es oft keine echte task-Spalte.
-    Dann gruppieren wir alles unter 'all'.
-    """
     task = row.get("task", None)
 
     if task is not None and str(task).strip() and str(task).strip().lower() not in {"mmlu", "gsm", "gsm8k", "mgsm", "math", "math500"}:
@@ -51,14 +46,9 @@ def get_group_name(row):
 
 def get_eval_value(row, generation_index=0):
     """
-    Versucht, aus bereits evaluierten Dateien die Korrektheit zu lesen.
-    Unterstützt u.a.:
-    - BBH/MATH: mv_eval, all_eval
-    - LiveCodeBench: graded_list, pass@1
-    - allgemeine Felder: correct, is_correct, eval
+    extracts the correctness out of evaluated files
     """
 
-    # LiveCodeBench: pro Generation eine Bewertung
     if "graded_list" in row:
         graded_list = row["graded_list"]
 
@@ -69,7 +59,6 @@ def get_eval_value(row, generation_index=0):
         if isinstance(graded_list, bool):
             return bool(graded_list)
 
-    # LiveCodeBench: aggregierter pass@1
     if "pass@1" in row:
         return bool(row["pass@1"])
 
@@ -116,7 +105,6 @@ def main():
         if not content:
             return []
 
-        # Fall 1: normale JSON-Datei, z.B. Liste von Dicts
         if content[0] in ["[", "{"]:
             try:
                 data = json.loads(content)
@@ -125,18 +113,15 @@ def main():
                     return data
 
                 if isinstance(data, dict):
-                    # Falls die Beispiele in einem Feld liegen
                     for key in ["data", "results", "examples", "predictions"]:
                         if key in data and isinstance(data[key], list):
                             return data[key]
 
-                    # Sonst einzelnes Dict als eine Zeile behandeln
                     return [data]
 
             except json.JSONDecodeError:
                 pass
 
-    # Fall 2: JSONL-Datei
         rows = []
         with open(path, "r") as f:
             for line_no, line in enumerate(f, start=1):
@@ -178,7 +163,7 @@ def main():
         generations = (
             row.get("model_generation")
             or row.get("model_output")
-            or row.get("output_list")        # LiveCodeBench
+            or row.get("output_list")
             or row.get("raw_response")
             or row.get("generated_code")
             or row.get("completion")
@@ -283,7 +268,6 @@ def main():
     else:
         print("  accuracy:                       not available in input file")
 
-    # Nur sinnvoll groß ausgeben, wenn es mehr als eine Gruppe gibt.
     if len(summary["per_task"]) > 1:
         print()
         print("Per task:")

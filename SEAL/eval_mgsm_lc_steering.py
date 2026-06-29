@@ -208,7 +208,7 @@ def main(args):
         "prompt": prompt,
         "problem": example["question"],
         "answer": example["gt"],
-        "solution":  example.get("answer", ""), # Hier wurde etwas geändert -> davor: example["answer"]
+        "solution":  example.get("answer", ""),
         "language": example.get("language", "en" if args.dataset == "GSM8K" else args.lang),
         "prompt_variant": "lc" if args.dataset == "MGSM" else "en",
         "model_generation": output,

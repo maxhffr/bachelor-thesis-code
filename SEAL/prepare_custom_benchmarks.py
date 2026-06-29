@@ -91,7 +91,6 @@ def prepare_mmlu():
             "gt": idx_to_letter[ex["answer"]],
         }
 
-        # Falls das Dataset ein subject / category Feld mitliefert, mitnehmen
         for key in ("subject", "subcategory", "category"):
             if key in ex:
                 row[key] = ex[key]

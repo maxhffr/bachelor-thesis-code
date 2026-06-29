@@ -62,10 +62,8 @@ def strip_thinking(text):
 
     text = str(text)
 
-    # Reasoning tags entfernen, falls ein Modell sie ausgibt
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
 
-    # Code fences entfernen
     text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
 
     return text.strip()
@@ -73,8 +71,7 @@ def strip_thinking(text):
 
 def extract_boxed(text):
     """
-    Extrahiert die letzte \\boxed{...}-Antwort.
-    Unterstützt auch verschachtelte Klammern innerhalb der Box.
+    extracts final \\boxed{...} answer.
     """
     if text is None:
         return None
@@ -111,10 +108,6 @@ def extract_boxed(text):
 
 
 def get_final_text(text):
-    """
-    Primär: Inhalt aus \\boxed{}.
-    Fallback: letzte nicht-leere Zeile.
-    """
     boxed = extract_boxed(text)
     if boxed is not None:
         return boxed
@@ -138,18 +131,15 @@ def normalize_basic(text):
 
 def normalize_choice(text):
     """
-    Normalisiert Multiple-Choice-Antworten:
-    (A), A, answer is A, \\boxed{A}, \\boxed{(A)} -> A
+    normalizes multiple choice answers
     """
     text = get_final_text(text)
     text = str(text).strip()
 
-    # Erst explizite Form wie (A)
     matches = re.findall(r"\(([A-G])\)", text, flags=re.IGNORECASE)
     if matches:
         return matches[-1].upper()
 
-    # Dann typische Formulierungen
     matches = re.findall(
         r"(?:answer|option|choice|final answer)\s*(?:is|:)?\s*\(?([A-G])\)?",
         text,
@@ -158,7 +148,6 @@ def normalize_choice(text):
     if matches:
         return matches[-1].upper()
 
-    # Dann einzelne Buchstaben
     matches = re.findall(r"\b([A-G])\b", text, flags=re.IGNORECASE)
     if matches:
         return matches[-1].upper()
@@ -208,7 +197,6 @@ def normalize_number(text):
 def normalize_dyck(text):
     text = get_final_text(text)
 
-    # Für Dyck Languages zählen nur die schließenden Klammerzeichen.
     chars = re.findall(r"[\}\]\)\>]", str(text))
 
     return " ".join(chars)
@@ -216,37 +204,19 @@ def normalize_dyck(text):
 
 def extract_word_sorting_final_text(text):
     """
-    Robuste Final-Answer-Extraktion speziell für BBH word_sorting.
-
-    Erkennt u.a.:
-    - \\boxed{...}
-    - Answer: ...
-    - **Answer:** ...
-    - Final Answer: ...
-    - nummerierte Listen:
-      1. apple
-      2. banana
-    - letzte komma-separierte Antwortzeile:
-      ** ami, exeter, bituminous, knickerbocker
+    extracts final texts from word_sorting
     """
     if text is None:
         return ""
 
     raw = str(text)
 
-    # 1. Boxed bleibt höchste Priorität
     boxed = extract_boxed(raw)
     if boxed is not None:
         return boxed
 
-    # 2. Reasoning / Codefences entfernen, aber NICHT auf letzte Zeile kürzen
     visible = strip_thinking(raw)
 
-    # 3. Letzten Answer-Marker erkennen, inkl. Markdown-Fettung
-    # Beispiele:
-    # Answer: apple, banana
-    # **Answer:** apple, banana
-    # Final answer: apple, banana
     marker_pattern = re.compile(
         r"(?:\*\*)?\s*(?:final\s+answer|answer)\s*(?:\*\*)?\s*[:：]\s*(.*)",
         flags=re.IGNORECASE | re.DOTALL,
@@ -256,12 +226,10 @@ def extract_word_sorting_final_text(text):
     if marker_matches:
         candidate = marker_matches[-1].group(1).strip()
 
-        # Falls nach Answer: eine nummerierte Liste kommt
         numbered = extract_word_sorting_numbered_list(candidate)
         if numbered:
             return numbered
 
-        # Sonst erste nicht-leere Zeile nach dem Answer-Marker
         lines = [clean_word_sorting_line(line) for line in candidate.splitlines()]
         lines = [line for line in lines if line]
 
@@ -270,19 +238,14 @@ def extract_word_sorting_final_text(text):
 
         return candidate.strip()
 
-    # 4. Nummerierte Liste im sichtbaren Text erkennen
     numbered = extract_word_sorting_numbered_list(visible)
     if numbered:
         return numbered
 
-    # 5. Letzte komma-separierte Zeile erkennen
-    # Beispiel:
-    # ** ami, exeter, bituminous, knickerbocker
     comma_line = extract_word_sorting_comma_line(visible)
     if comma_line:
         return comma_line
 
-    # 6. Fallback wie bisher: letzte nicht-leere Zeile
     lines = [clean_word_sorting_line(line) for line in visible.splitlines()]
     lines = [line for line in lines if line]
 
@@ -295,11 +258,9 @@ def extract_word_sorting_final_text(text):
 def clean_word_sorting_line(line):
     line = str(line).strip()
 
-    # Markdown-Fettung / Bullets am Rand entfernen
     line = re.sub(r"^\*+\s*", "", line)
     line = re.sub(r"\s*\*+$", "", line)
 
-    # Abschließende Satzzeichen entfernen
     line = re.sub(r"[.;:]+$", "", line)
 
     return line.strip()
@@ -307,12 +268,7 @@ def clean_word_sorting_line(line):
 
 def extract_word_sorting_numbered_list(text):
     """
-    Macht aus:
-    1. Accelerate
-    2. County
-    3. Phony
-
-    -> Accelerate, County, Phony
+    extracts final word lists into the correct answer format
     """
     items = []
 
@@ -337,16 +293,13 @@ def extract_word_sorting_numbered_list(text):
 
 def extract_word_sorting_comma_line(text):
     """
-    Nimmt die letzte sinnvolle komma-separierte Antwortzeile.
-    Beispiel:
-    ** ami, exeter, bituminous, knickerbocker
+    extracts final words seprated by , correctly
     """
     lines = [line.strip() for line in str(text).splitlines() if line.strip()]
 
     for line in reversed(lines):
         cleaned = clean_word_sorting_line(line)
 
-        # Komma-separierte Wortliste als starkes Signal
         if "," in cleaned and len([x for x in cleaned.split(",") if x.strip()]) >= 2:
             return cleaned
 
@@ -357,7 +310,6 @@ def normalize_word_sorting(text):
     text = extract_word_sorting_final_text(text)
     text = str(text).strip().lower()
 
-    # Häufige Einleitungen entfernen
     text = re.sub(
         r"^(the words sorted alphabetically are|the sorted words are|sorted words are|"
         r"the answer is|answer is|final answer is|answer)\s*:?\s*",
@@ -366,12 +318,8 @@ def normalize_word_sorting(text):
         flags=re.IGNORECASE,
     )
 
-    # Nummerierung entfernen, falls sie inline gelandet ist:
-    # 1. apple 2. banana -> apple banana
     text = re.sub(r"\b\d+[\.\)]\s*", " ", text)
 
-    # Apostrophe nicht entfernen, damit O'connell nicht zu Oconnell wird.
-    # Restliche Satzzeichen zu Leerzeichen machen.
     keep_apostrophe = "'"
     punctuation_without_apostrophe = string.punctuation.replace(keep_apostrophe, "")
     text = text.translate(str.maketrans(punctuation_without_apostrophe, " " * len(punctuation_without_apostrophe)))
@@ -404,7 +352,6 @@ def normalize_bbh_answer(text, task):
     if task in MULTIPLE_CHOICE_TASKS:
         return normalize_choice(text)
 
-    # Fallback: BBH ist fast komplett oben abgedeckt.
     return normalize_basic(text)
 
 
@@ -439,8 +386,6 @@ def main(res_path, save=False, k=None, output_dir=None):
             for pred in all_pred
         ]
 
-        # Analog zu get_math_results:
-        # Wenn boxed vorhanden ist, bevorzuge diese Generations für Majority Vote.
         effective_pred = [
             pred
             for pred, raw in zip(all_pred, example["model_generation"])

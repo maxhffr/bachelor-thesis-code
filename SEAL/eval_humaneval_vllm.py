@@ -54,7 +54,7 @@ def write_jsonl(path, rows):
 def strip_code_fences(text):
     text = text.strip()
 
-    # Falls das Modell ```python ... ``` ausgibt
+    # if model outputs ```python ... ```
     m = re.search(r"```(?:python)?\s*(.*?)```", text, flags=re.DOTALL)
     if m:
         text = m.group(1).strip()
@@ -65,7 +65,7 @@ def strip_code_fences(text):
 def clean_humaneval_completion(text, prompt=None, entry_point=None):
     text = text.strip()
 
-    # 1. Falls Markdown-Codeblöcke vorhanden sind, nimm den letzten Block.
+    # Normalize model outputs for the HumanEval Harness
     code_blocks = re.findall(
         r"```(?:python)?\s*(.*?)```",
         text,
@@ -74,7 +74,6 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
     if code_blocks:
         text = code_blocks[-1].strip()
 
-    # 2. Falls typische finale Marker vorhanden sind, nimm alles danach.
     final_markers = [
         "Final code:",
         "Final Code:",
@@ -88,19 +87,15 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
         if marker in text:
             text = text.split(marker, 1)[1].strip()
 
-    # 3. Falls Prompt wiederholt wurde, entfernen.
     if prompt and text.startswith(prompt):
         text = text[len(prompt):].strip()
 
-    # 4. Falls komplette Funktion generiert wurde, nur Body behalten.
     if entry_point:
         pattern = rf"def\s+{re.escape(entry_point)}\s*\(.*?\)\s*(?:->\s*.*?)?:\s*\n"
         m = re.search(pattern, text, flags=re.DOTALL)
         if m:
             text = text[m.end():]
 
-    # 5. Ab erster echter Python-Code-Zeile nehmen.
-    # Wichtig: Kein "=" alleine, weil Reasoning wie "l=2: substring..." sonst durchrutscht.
     lines = text.splitlines()
     code_start = None
 
@@ -120,7 +115,6 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
     if code_start is not None:
         text = "\n".join(lines[code_start:])
 
-    # 6. Nachfolgende Erklärungen oder Tests abschneiden.
     stop_markers = [
         "\n\n# Explanation",
         "\n\nExplanation:",
@@ -148,7 +142,6 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
         if marker in text:
             text = text.split(marker, 1)[0]
 
-    # 7. Zeilen entfernen, die sehr wahrscheinlich Reasoning sind.
     cleaned_lines = []
     for line in text.splitlines():
         stripped = line.strip()
@@ -173,7 +166,6 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
         if stripped.startswith(reasoning_starts):
             break
 
-        # Fängt wie "l=2: substring..." an -> Reasoning, kein Python-Code.
         if re.match(r"^[A-Za-z_][A-Za-z0-9_]*\s*=\s*[^=]+:", stripped):
             break
 
@@ -189,7 +181,6 @@ def clean_humaneval_completion(text, prompt=None, entry_point=None):
     if not lines:
         return ""
 
-    # 8. Falls der Body nicht eingerückt ist, als HumanEval-Completion einrücken.
     first_nonempty = next((line for line in lines if line.strip()), "")
     if first_nonempty and not first_nonempty.startswith((" ", "\t")):
         lines = ["    " + line if line.strip() else line for line in lines]
